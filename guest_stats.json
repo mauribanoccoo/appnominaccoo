@@ -1,0 +1,17 @@
+{
+  "totalGuestLogins": 3,
+  "guestHistory": [
+    {
+      "matricula": "GUEST_XSFQ5C",
+      "date": "2026-03-05T18:39:11.818Z"
+    },
+    {
+      "matricula": "GUEST_5ZEBMC",
+      "date": "2026-03-05T18:44:12.400Z"
+    },
+    {
+      "matricula": "GUEST_RGSFW2",
+      "date": "2026-03-05T20:54:30.963Z"
+    }
+  ]
+}

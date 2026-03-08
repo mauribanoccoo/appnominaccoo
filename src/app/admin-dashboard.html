@@ -1,0 +1,331 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+        <mat-icon class="text-blue-600">admin_panel_settings</mat-icon>
+        Panel de Administración
+      </h1>
+      <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full md:w-auto">
+        @if (showEmployeeManager() || showPayrollManager()) {
+          <button (click)="goHome()" class="px-3 py-2 sm:px-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2 shadow-sm text-sm sm:text-base" title="Volver al Inicio">
+            <mat-icon class="text-sm sm:text-base">home</mat-icon>
+            <span>Inicio</span>
+          </button>
+        }
+        <button (click)="downloadDatabase()" class="px-3 py-2 sm:px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-sm text-sm sm:text-base" title="Descargar Base de Datos">
+          <mat-icon class="text-sm sm:text-base">download</mat-icon>
+          <span>Exportar BD</span>
+        </button>
+        <button (click)="triggerUpload()" class="px-3 py-2 sm:px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2 shadow-sm text-sm sm:text-base" title="Cargar Base de Datos">
+          <mat-icon class="text-sm sm:text-base">upload</mat-icon>
+          <span>Importar BD</span>
+        </button>
+        <input type="file" id="dbUploadInput" (change)="uploadDatabase($event)" accept=".json" class="hidden">
+
+        <button (click)="toggleEmployeeManager()" class="px-3 py-2 sm:px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-sm text-sm sm:text-base">
+          <mat-icon class="text-sm sm:text-base">{{ showEmployeeManager() ? 'people' : 'badge' }}</mat-icon>
+          <span>{{ showEmployeeManager() ? 'Usuarios' : 'Empleados' }}</span>
+        </button>
+        <button (click)="togglePayrollManager()" class="px-3 py-2 sm:px-4 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-sm text-sm sm:text-base">
+          <mat-icon class="text-sm sm:text-base">upload_file</mat-icon>
+          <span>Nóminas</span>
+        </button>
+        <button (click)="logout()" class="px-3 py-2 sm:px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 shadow-sm text-sm sm:text-base">
+          <mat-icon class="text-sm sm:text-base">logout</mat-icon>
+          <span>Salir</span>
+        </button>
+      </div>
+    </div>
+
+    @if (showEmployeeManager()) {
+      <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 p-6">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <mat-icon class="text-blue-600">badge</mat-icon>
+          Base de Datos de Empleados
+        </h2>
+        
+        <!-- Add Form -->
+        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
+          <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">Añadir / Modificar Empleado</h3>
+          <div class="flex flex-col sm:flex-row gap-4 items-end">
+            <div class="w-full sm:w-1/4">
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Matrícula</label>
+              <input [ngModel]="newEmployeeMatricula()" (ngModelChange)="newEmployeeMatricula.set($event)" type="text" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="Ej: 1234">
+            </div>
+            <div class="w-full sm:w-1/2">
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nombre Completo</label>
+              <input [ngModel]="newEmployeeName()" (ngModelChange)="newEmployeeName.set($event)" type="text" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" placeholder="Ej: Juan Pérez">
+            </div>
+            <button (click)="addEmployee()" class="w-full sm:w-auto px-6 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+              <mat-icon class="text-sm">save</mat-icon>
+              Guardar
+            </button>
+          </div>
+        </div>
+
+        <!-- Search -->
+        <div class="mb-4">
+           <div class="relative">
+             <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</mat-icon>
+             <input [ngModel]="employeeSearch()" (ngModelChange)="employeeSearch.set($event)" type="text" placeholder="Buscar por matrícula o nombre..." class="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+           </div>
+        </div>
+
+        <!-- List -->
+        <div class="overflow-hidden border border-gray-200 dark:border-gray-700 rounded-xl">
+          <div class="overflow-y-auto max-h-[500px]">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead class="bg-gray-50 dark:bg-gray-900/50 sticky top-0 z-10">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Matrícula</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nombre</th>
+                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                @for (emp of filteredEmployees(); track emp[0]) {
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <td class="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ emp[0] }}</td>
+                    <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ emp[1] }}</td>
+                    <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium">
+                      <button (click)="deleteEmployee(emp[0])" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 inline-flex items-center gap-1">
+                        <mat-icon class="text-sm h-4 w-4">delete</mat-icon>
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="3" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                      No se encontraron empleados.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    } @else if (showPayrollManager()) {
+      <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700 p-6">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+          <mat-icon class="text-emerald-600">upload_file</mat-icon>
+          Cargar Datos de Nómina
+        </h2>
+        
+        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-6">
+          <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">Nuevo Año de Nómina</h3>
+          <div class="flex flex-col sm:flex-row gap-4 items-end mb-4">
+            <div class="w-full sm:w-1/5">
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Año</label>
+              <input [ngModel]="newPayrollYear()" (ngModelChange)="newPayrollYear.set($event)" type="number" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" placeholder="Ej: 2027">
+            </div>
+            <div class="w-full sm:w-1/5">
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Valor K</label>
+              <input [ngModel]="newPayrollKValue()" (ngModelChange)="newPayrollKValue.set($event)" type="number" step="0.01" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" placeholder="Ej: 13.80">
+            </div>
+            <div class="w-full sm:w-1/5">
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Prima Mínima</label>
+              <input [ngModel]="newPayrollPrimaMinimaGarantizada()" (ngModelChange)="newPayrollPrimaMinimaGarantizada.set($event)" type="number" step="0.01" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" placeholder="Ej: 84.06">
+            </div>
+            <div class="w-full sm:w-1/5">
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Base Máxima (Ej: 5101.20)</label>
+              <input [ngModel]="newPayrollBaseMaximaCotizacion()" (ngModelChange)="newPayrollBaseMaximaCotizacion.set($event)" type="number" step="0.01" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" placeholder="Ej: 5101.20">
+            </div>
+            <div class="w-full sm:w-1/5">
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">MEI % (Ej: 0.15)</label>
+              <input [ngModel]="newPayrollMeiValue()" (ngModelChange)="newPayrollMeiValue.set($event)" type="number" step="0.01" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all" placeholder="Ej: 0.15">
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-4 items-end">
+            <div class="w-full sm:w-3/4">
+              <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Archivo CSV</label>
+              <input type="file" id="payrollUploadInput" (change)="onPayrollFileSelected($event)" accept=".csv" class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+            </div>
+            <button (click)="uploadPayrollData()" class="w-full sm:w-1/4 px-6 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2">
+              <mat-icon class="text-sm">cloud_upload</mat-icon>
+              Subir Datos
+            </button>
+          </div>
+          <div class="flex gap-4 mt-4">
+            <button (click)="downloadPayrollCSV(2025)" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 text-sm font-medium">
+              <mat-icon class="text-sm">download</mat-icon>
+              Descargar CSV 2025
+            </button>
+            <button (click)="downloadPayrollCSV(2026)" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 text-sm font-medium">
+              <mat-icon class="text-sm">download</mat-icon>
+              Descargar CSV 2026
+            </button>
+          </div>
+          <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">
+            <mat-icon class="inline align-middle text-xs mr-1">info</mat-icon>
+            Sube un archivo CSV con el mismo formato que los datos de 2025/2026. El sistema aplicará automáticamente las reglas de transición para enero (usando datos del año anterior para conceptos fijos).
+          </p>
+        </div>
+
+        <!-- List of Uploaded Years -->
+        <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+          <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">Años de Nómina Subidos</h3>
+          
+          @if (uploadedYears().length > 0) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              @for (item of uploadedYears(); track item.year) {
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-between shadow-sm">
+                  <div class="flex flex-col">
+                    <span class="font-bold text-gray-900 dark:text-white text-lg">{{ item.year }}</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">K: {{ item.kValue }} | Prima: {{ item.primaMinimaGarantizada || '-' }} | Base Max: {{ item.baseMaximaCotizacion || '-' }} | MEI: {{ item.meiValue || '-' }}%</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <button (click)="editPayrollYear(item.year, item.kValue, item.primaMinimaGarantizada, item.baseMaximaCotizacion, item.meiValue)" class="p-1.5 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-full transition-colors" title="Editar / Sobrescribir">
+                      <mat-icon class="text-sm h-4 w-4">edit</mat-icon>
+                    </button>
+                    <button (click)="deletePayrollYear(item.year)" class="p-1.5 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 rounded-full transition-colors" title="Eliminar">
+                      <mat-icon class="text-sm h-4 w-4">delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-sm text-gray-500 dark:text-gray-400 italic">No hay años de nómina adicionales subidos.</p>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+        <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+          <mat-icon class="text-blue-600 dark:text-blue-400">people</mat-icon>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">Usuarios Registrados</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ registeredCount() }}</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 flex items-center gap-4">
+        <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
+          <mat-icon class="text-green-600 dark:text-green-400">person_outline</mat-icon>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">Accesos Activos</p>
+          <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ guestCount() }}</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
+            <mat-icon class="text-purple-600 dark:text-purple-400">history</mat-icon>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wider">Total Histórico Invitados</p>
+            <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ totalGuestLogins() }}</p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <button (click)="downloadGuestHistory()" class="px-3 py-1.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors text-xs font-medium flex items-center gap-1 whitespace-nowrap">
+            <mat-icon class="text-sm h-4 w-4">download</mat-icon>
+            Descargar Historial
+          </button>
+          <button (click)="resetGuestCounter()" class="px-3 py-1.5 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors text-xs font-medium flex items-center gap-1 whitespace-nowrap">
+            <mat-icon class="text-sm h-4 w-4">restart_alt</mat-icon>
+            Poner a 0
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-900/50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Matrícula
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Categoría
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Antigüedad
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Fecha Registro
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Estado / Expira
+              </th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            @for (user of users(); track user.matricula) {
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                  <div class="flex items-center gap-2">
+                    {{ user.matricula }}
+                    @if (user.matricula.startsWith('GUEST_')) {
+                      <span class="px-1.5 py-0.5 text-[10px] font-bold uppercase bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 rounded border border-green-200 dark:border-green-800">Invitado</span>
+                    }
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  {{ user.categoria }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  {{ user.mesIngreso }}/{{ user.anoAntiguedad }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  @if (user.registrationDate) {
+                    {{ user.registrationDate | date:'dd/MM/yyyy HH:mm' }}
+                  } @else {
+                    -
+                  }
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  <div class="flex flex-col gap-1">
+                    @if (user.lockoutUntil && user.lockoutUntil > Date.now()) {
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 w-fit">
+                        Bloqueado
+                      </span>
+                    } @else {
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 w-fit">
+                        Activo
+                      </span>
+                    }
+                    
+                    @if (user.expiresAt) {
+                      <span class="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <mat-icon class="text-[10px] h-3 w-3">timer</mat-icon>
+                        Expira en {{ Math.ceil((user.expiresAt - Date.now()) / 60000) }} min
+                      </span>
+                    }
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button (click)="deleteUser(user.matricula)" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 flex items-center justify-end gap-1 ml-auto">
+                    <mat-icon class="text-sm h-4 w-4">delete</mat-icon>
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                  <div class="flex flex-col items-center justify-center">
+                    <mat-icon class="text-4xl text-gray-300 mb-2">people_outline</mat-icon>
+                    <p>No hay usuarios registrados en el sistema.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    }
+  </div>
+</div>
