@@ -28,7 +28,7 @@
                "rgbcolor",
               "core-js"
              ],
-            "outputPath": "dist",
+            "outputPath": "dist/nominaccoo",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [],
@@ -63,7 +63,7 @@
               "sourceMap": true
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular/build:dev-server",
@@ -72,10 +72,10 @@
               "buildTarget": "Nominaccoo:build:production"
             },
             "development": {
-              "buildTarget": "Nominaccoo:build:development"
+              "buildTarget": "Nominaccoo:build:production"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "production"
         },
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n",
